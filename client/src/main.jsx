@@ -1,7 +1,8 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import {BrowseRouter, Routes ,Route} from "react-router";
+
+import { createRoot } from "react-dom/client";
+import "./index.css";
+
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import AllBlog from "./views/AllBlog";
 import NewBlog from "./views/NewBlog";
@@ -10,22 +11,25 @@ import ReadBlog from "./views/ReadBlog";
 import Login from "./views/Login";
 import Signup from "./views/Signup";
 
-
-createRoot(document.getElementById('root')).render(
-  <BrowseRouter>
+createRoot(document.getElementById("root")).render(
+  <BrowserRouter>
     <Routes>
-      <Route path ="/"  element={<AllBlog/>}/>
-      <Route path ="/new"  element={<NewBlog/>}/>
-      <Route path ="/edit/:id"  element={<editBlog/>}/>
-      <Route path ="/blog/:slug"  element={<ReadBlog/>}/>
-      <Route path ="/login"  element={<Login/>}/>
-      <Route path ="/signup"  element={<Signup/>}/>
+      <Route path="/" element={<AllBlog />} />
+      <Route path="/new" element={<NewBlog />} />
+      <Route path="/edit/:id" element={<EditBlog />} />
+      <Route path="/blog/:slug" element={<ReadBlog />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
 
-      <Route path ="*"  element={<h1 ClassName="text-center mt-5"> 404 Not found</h1>}/>
-
-
+      <Route
+        path="*"
+        element={
+          <h1 className="text-center mt-5 text-3xl font-bold">
+            404 Not Found
+          </h1>
+        }
+      />
     </Routes>
-  </BrowseRouter>
-  
-  
-)
+  </BrowserRouter>
+);
+
