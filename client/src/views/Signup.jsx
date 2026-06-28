@@ -23,19 +23,27 @@ function Signup() {
         user
       );
 
-      console.log("User Data:", user);
-      console.log(response.data);
+      console.log("Response:", response.data);
 
-      alert("Signup Successful!");
+      if (response.data.success) {
+        alert(response.data.message);
 
-      setUser({
-        name: "",
-        email: "",
-        password: "",
-      });
+        setUser({
+          name: "",
+          email: "",
+          password: "",
+        });
+      } else {
+        alert(response.data.message);
+      }
     } catch (error) {
-      console.log(error);
-      alert("Signup Failed");
+      console.log("Signup Error:", error);
+
+      if (error.response) {
+        alert(error.response.data.message);
+      } else {
+        alert("Server Error. Please try again.");
+      }
     }
   };
 
@@ -57,11 +65,11 @@ function Signup() {
       <form
         onSubmit={handleSubmit}
         style={{
-          backgroundColor: "white",
           width: "350px",
+          backgroundColor: "white",
           padding: "30px",
           borderRadius: "8px",
-          boxShadow: "0px 0px 10px rgba(0,0,0,0.2)",
+          boxShadow: "0 0 10px rgba(0,0,0,0.2)",
         }}
       >
         <h2
@@ -144,7 +152,6 @@ function Signup() {
           style={{
             textAlign: "center",
             marginTop: "15px",
-            fontSize: "14px",
           }}
         >
           Already have an account?{" "}
