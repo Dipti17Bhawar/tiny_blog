@@ -7,9 +7,9 @@ export const signupUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    const user = await User.findOne({ email });
+    const existingUser = await User.findOne({ email });
 
-    if (user) {
+    if (existingUser) {
       return res.json({
         success: false,
         message: "User already exists",
@@ -24,7 +24,7 @@ export const signupUser = async (req, res) => {
 
     await newUser.save();
 
-    res.json({
+    res.status(201).json({
       success: true,
       message: "Signup Successful",
     });
@@ -41,24 +41,23 @@ export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({
-      email,
-    });
+    const user = await User.findOne({ email });
 
     if (!user) {
-      return res.json({
+      return res.status(404).json({
         success: false,
         message: "User not found",
       });
     }
 
     if (user.password !== md5(password)) {
-      return res.json({
+      return res.status(401).json({
         success: false,
         message: "Incorrect Password",
       });
     }
 
+    // Generate JWT Token
     const token = jwt.sign(
       {
         _id: user._id,
@@ -71,11 +70,15 @@ export const loginUser = async (req, res) => {
       }
     );
 
-    res.json({
+    res.status(200).json({
       success: true,
       message: "Login Successful",
-      token,
-      data: user,
+      token: token,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+      },
     });
   } catch (err) {
     res.status(500).json({

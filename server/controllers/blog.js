@@ -117,6 +117,28 @@ export const patchPublishBlog = async (req, res) => {
   }
 };
 
+
+//myBlogs
+export const getMyBlogs = async (req, res) => {
+  try {
+    const blogs = await Blog.find({
+      userId: req.currentUser._id,
+    })
+      .populate("userId", "name email")
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      data: blogs,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
 // Update Blog
 export const putBlogs = async (req, res) => {
   const { slug } = req.params;
@@ -145,4 +167,34 @@ export const putBlogs = async (req, res) => {
     message: "Blog Updated",
     data: blog,
   });
+};
+
+
+//deleteBlogs 
+export const deleteBlog = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const blog = await Blog.findOneAndDelete({
+      _id: id,
+      userId: req.currentUser._id,
+    });
+
+    if (!blog) {
+      return res.status(404).json({
+        success: false,
+        message: "Blog not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Blog Deleted Successfully",
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
 };
