@@ -1,13 +1,15 @@
 import User from "../models/User.js";
+import md5 from "md5";
+import jwt from "jsonwebtoken";
 
 // Signup
 export const signupUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    const existingUser = await User.findOne({ email });
+    const user = await User.findOne({ email });
 
-    if (existingUser) {
+    if (user) {
       return res.json({
         success: false,
         message: "User already exists",
@@ -17,21 +19,16 @@ export const signupUser = async (req, res) => {
     const newUser = new User({
       name,
       email,
-      password,
+      password: md5(password),
     });
 
     await newUser.save();
 
-    console.log("Signup User:", newUser);
-
     res.json({
       success: true,
       message: "Signup Successful",
-      data: newUser,
     });
   } catch (err) {
-    console.log(err);
-
     res.status(500).json({
       success: false,
       message: err.message,
@@ -44,7 +41,9 @@ export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({
+      email,
+    });
 
     if (!user) {
       return res.json({
@@ -53,23 +52,32 @@ export const loginUser = async (req, res) => {
       });
     }
 
-    if (user.password !== password) {
+    if (user.password !== md5(password)) {
       return res.json({
         success: false,
         message: "Incorrect Password",
       });
     }
 
-    console.log("Login User:", user);
+    const token = jwt.sign(
+      {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "7d",
+      }
+    );
 
     res.json({
       success: true,
       message: "Login Successful",
+      token,
       data: user,
     });
   } catch (err) {
-    console.log(err);
-
     res.status(500).json({
       success: false,
       message: err.message,
