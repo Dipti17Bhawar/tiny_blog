@@ -8,28 +8,31 @@ export default function AllBlog() {
 
   const navigate = useNavigate();
 
-  const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+  const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
   const token = localStorage.getItem("token");
-
-  const loadBlogs = async () => {
-    try {
-      const response = await axios.get("http://localhost:8080/blogs");
-
-      setBlogs(response.data.data);
-      setLoading(false);
-    } catch (err) {
-      console.log(err);
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
     loadBlogs();
   }, []);
 
+  const loadBlogs = async () => {
+    try {
+      const response = await axios.get("http://localhost:8080/blogs");
+
+      if (response.data.success) {
+        setBlogs(response.data.data);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+
+    setLoading(false);
+  };
+
   const logout = () => {
     localStorage.removeItem("currentUser");
     localStorage.removeItem("token");
+
     navigate("/login");
   };
 
@@ -50,52 +53,70 @@ export default function AllBlog() {
     <div
       style={{
         width: "80%",
-        margin: "20px auto",
+        margin: "30px auto",
+        fontFamily: "Arial, sans-serif",
       }}
     >
       {/* Header */}
 
       <div
         style={{
-          backgroundColor: "#2f3e4e",
+          backgroundColor: "#34495e",
           color: "white",
-          padding: "15px",
+          padding: "15px 20px",
+          borderRadius: "5px",
           display: "flex",
           justifyContent: "space-between",
-          borderRadius: "5px",
+          alignItems: "center",
+          marginBottom: "20px",
         }}
       >
-        <h3>Hello {currentUser?.name}</h3>
+        <h3 style={{ margin: 0 }}>
+          {currentUser?.name ? `Hello ${currentUser.name}` : "Welcome to Tiny Blog"}
+        </h3>
 
-        <div>
-          {token && (
+        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+          {token ? (
             <>
-              <button
-                onClick={() => navigate("/new-blog")}
+              <Link
+                to="/new"
                 style={{
-                  marginRight: "10px",
+                  color: "white",
+                  textDecoration: "none",
+                  fontWeight: "bold",
                 }}
               >
-                New Blog
-              </button>
-
+                Create Blog
+              </Link>
               <button
-                onClick={() => navigate("/my-blog")}
+                onClick={logout}
                 style={{
-                  marginRight: "10px",
+                  backgroundColor: "white",
+                  color: "#34495e",
+                  border: "none",
+                  padding: "8px 18px",
+                  borderRadius: "5px",
+                  cursor: "pointer",
+                  fontWeight: "bold",
                 }}
               >
-                My Blogs
+                Logout
               </button>
             </>
-          )}
-
-          {token ? (
-            <button onClick={logout}>Logout</button>
           ) : (
-            <button onClick={() => navigate("/login")}>
+            <Link
+              to="/login"
+              style={{
+                backgroundColor: "white",
+                color: "#34495e",
+                padding: "8px 18px",
+                borderRadius: "5px",
+                textDecoration: "none",
+                fontWeight: "bold",
+              }}
+            >
               Login
-            </button>
+            </Link>
           )}
         </div>
       </div>
@@ -106,46 +127,60 @@ export default function AllBlog() {
         <div
           key={blog._id}
           style={{
-            border: "1px solid gray",
-            padding: "20px",
-            marginTop: "20px",
-            borderRadius: "8px",
+            border: "1px solid #cfcfcf",
+            borderRadius: "6px",
+            padding: "18px",
+            marginBottom: "18px",
             position: "relative",
+            backgroundColor: "#fff",
+            boxShadow: "0 1px 4px rgba(0,0,0,0.1)",
           }}
         >
+          {/* Category */}
+
           <span
             style={{
               position: "absolute",
               right: "15px",
               top: "15px",
-              backgroundColor: "#ddd",
-              padding: "4px 10px",
-              borderRadius: "5px",
+              backgroundColor: "#f1f1f1",
+              padding: "4px 12px",
+              borderRadius: "4px",
               fontSize: "12px",
             }}
           >
             {blog.category}
           </span>
 
-          <h2>{blog.title}</h2>
+          {/* Title */}
+
+          <h2
+            style={{
+              marginBottom: "18px",
+            }}
+          >
+            {blog.title}
+          </h2>
+
+          {/* User */}
 
           <div
             style={{
               display: "flex",
               alignItems: "center",
-              marginTop: "15px",
             }}
           >
             <div
               style={{
-                width: "45px",
-                height: "45px",
+                width: "50px",
+                height: "50px",
                 borderRadius: "50%",
-                backgroundColor: "orange",
+                backgroundColor: "#f4b04a",
                 color: "white",
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
+                fontSize: "22px",
                 fontWeight: "bold",
                 marginRight: "15px",
               }}
@@ -154,29 +189,68 @@ export default function AllBlog() {
             </div>
 
             <div>
-              <h4>{blog.userId?.name}</h4>
+              <h4
+                style={{
+                  margin: "0px",
+                }}
+              >
+                {blog.userId?.name}
+              </h4>
 
-              <p>{blog.userId?.email}</p>
+              <p
+                style={{
+                  margin: "5px 0",
+                  color: "#555",
+                }}
+              >
+                {blog.userId?.email}
+              </p>
 
               <small>
-                Published On :
+                Published On :{" "}
                 {new Date(blog.createdAt).toLocaleString()}
               </small>
             </div>
           </div>
 
+          {/* Read More */}
+
           <div
             style={{
               textAlign: "right",
-              marginTop: "15px",
+              marginTop: "20px",
             }}
           >
             <Link to={`/read-blog/${blog._id}`}>
-              <button>Read More</button>
+              <button
+                style={{
+                  backgroundColor: "#34495e",
+                  color: "white",
+                  border: "none",
+                  padding: "10px 18px",
+                  borderRadius: "5px",
+                  cursor: "pointer",
+                  fontWeight: "bold",
+                }}
+              >
+                Read More
+              </button>
             </Link>
           </div>
         </div>
       ))}
+
+      {blogs.length === 0 && (
+        <h3
+          style={{
+            textAlign: "center",
+            color: "gray",
+            marginTop: "50px",
+          }}
+        >
+          No Blogs Found
+        </h3>
+      )}
     </div>
   );
 }

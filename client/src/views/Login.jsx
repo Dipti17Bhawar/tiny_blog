@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 function Login() {
+  const navigate = useNavigate();
+
   const [user, setUser] = useState({
     email: "",
     password: "",
@@ -22,15 +24,20 @@ function Login() {
         user
       );
 
-      console.log("Login Data:", user);
-      console.log(response.data);
+      if (response.data.success) {
+        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("currentUser", JSON.stringify(response.data.user));
+        alert("Login Successful!");
 
-      alert("Login Successful!");
+        setUser({
+          email: "",
+          password: "",
+        });
 
-      setUser({
-        email: "",
-        password: "",
-      });
+        navigate("/");
+      } else {
+        alert(response.data.message || "Login Failed!");
+      }
     } catch (error) {
       console.log(error);
       alert("Login Failed!");

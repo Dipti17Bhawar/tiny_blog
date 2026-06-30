@@ -2,6 +2,13 @@ import User from "../models/User.js";
 import md5 from "md5";
 import jwt from "jsonwebtoken";
 
+const hashPassword = (password) => md5(password);
+
+const isPasswordValid = (storedPassword, inputPassword) => {
+  const hashedInput = hashPassword(inputPassword);
+  return storedPassword === hashedInput || storedPassword === inputPassword;
+};
+
 // Signup
 export const signupUser = async (req, res) => {
   try {
@@ -19,7 +26,7 @@ export const signupUser = async (req, res) => {
     const newUser = new User({
       name,
       email,
-      password: md5(password),
+      password: hashPassword(password),
     });
 
     await newUser.save();
@@ -50,11 +57,16 @@ export const loginUser = async (req, res) => {
       });
     }
 
-    if (user.password !== md5(password)) {
+    if (!isPasswordValid(user.password, password)) {
       return res.status(401).json({
         success: false,
         message: "Incorrect Password",
       });
+    }
+
+    if (user.password !== hashPassword(password) && user.password === password) {
+      user.password = hashPassword(password);
+      await user.save();
     }
 
     // Generate JWT Token

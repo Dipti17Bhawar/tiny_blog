@@ -33,13 +33,13 @@ export const postBlogs = async (req, res) => {
 
     const savedBlog = await newBlog.save();
 
-    res.json({
+    return res.json({
       success: true,
       message: "Blog Added Successfully",
       blog: savedBlog,
     });
   } catch (err) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: err.message,
     });
@@ -48,12 +48,21 @@ export const postBlogs = async (req, res) => {
 
 // Get All Blogs
 export const getBlogs = async (req, res) => {
-  const blogs = await Blog.find().populate("userId", "name email");
+  try {
+    const blogs = await Blog.find()
+      .populate("userId", "name email")
+      .sort({ createdAt: -1 });
 
-  res.json({
-    success: true,
-    data: blogs,
-  });
+    return res.json({
+      success: true,
+      data: blogs,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
 };
 
 // Get Blog by Slug
@@ -61,7 +70,8 @@ export const getBlogForSlug = async (req, res) => {
   try {
     const { slug } = req.params;
 
-    const blog = await Blog.findOne({ slug }).populate("userId", "name email");
+    const blog = await Blog.findOne({ slug })
+      .populate("userId", "name email");
 
     if (!blog) {
       return res.status(404).json({
@@ -70,12 +80,12 @@ export const getBlogForSlug = async (req, res) => {
       });
     }
 
-    res.json({
+    return res.json({
       success: true,
       data: blog,
     });
   } catch (err) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: err.message,
     });
@@ -104,21 +114,20 @@ export const patchPublishBlog = async (req, res) => {
 
     await blog.save();
 
-    res.json({
+    return res.json({
       success: true,
-      message: "Blog published successfully",
+      message: "Blog Published Successfully",
       data: blog,
     });
   } catch (err) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: err.message,
     });
   }
 };
 
-
-//myBlogs
+// My Blogs
 export const getMyBlogs = async (req, res) => {
   try {
     const blogs = await Blog.find({
@@ -127,12 +136,12 @@ export const getMyBlogs = async (req, res) => {
       .populate("userId", "name email")
       .sort({ createdAt: -1 });
 
-    res.json({
+    return res.json({
       success: true,
       data: blogs,
     });
   } catch (err) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: err.message,
     });
@@ -141,36 +150,43 @@ export const getMyBlogs = async (req, res) => {
 
 // Update Blog
 export const putBlogs = async (req, res) => {
-  const { slug } = req.params;
-  const { title, category, content } = req.body;
+  try {
+    const { slug } = req.params;
+    const { title, category, content } = req.body;
 
-  const blog = await Blog.findOne({
-    slug,
-    userId: req.currentUser._id,
-  });
+    const blog = await Blog.findOne({
+      slug,
+      userId: req.currentUser._id,
+    });
 
-  if (!blog) {
-    return res.status(404).json({
+    if (!blog) {
+      return res.status(404).json({
+        success: false,
+        message: "Blog not found",
+      });
+    }
+
+    blog.title = title;
+    blog.category = category;
+    blog.content = content;
+    blog.slug = generateSlug(title);
+
+    await blog.save();
+
+    return res.json({
+      success: true,
+      message: "Blog Updated Successfully",
+      data: blog,
+    });
+  } catch (err) {
+    return res.status(500).json({
       success: false,
-      message: "Blog not found",
+      message: err.message,
     });
   }
-
-  blog.title = title;
-  blog.category = category;
-  blog.content = content;
-
-  await blog.save();
-
-  res.json({
-    success: true,
-    message: "Blog Updated",
-    data: blog,
-  });
 };
 
-
-//deleteBlogs 
+// Delete Blog
 export const deleteBlog = async (req, res) => {
   try {
     const { id } = req.params;
@@ -187,12 +203,12 @@ export const deleteBlog = async (req, res) => {
       });
     }
 
-    res.json({
+    return res.json({
       success: true,
       message: "Blog Deleted Successfully",
     });
   } catch (err) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: err.message,
     });
